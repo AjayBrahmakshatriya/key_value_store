@@ -4,8 +4,8 @@
 
 key_value* key_value_create(void) {
 	key_value* kv;
-	kv = (key_value*) malloc(sizeof(key_value));
-	kv->table = malloc(sizeof(struct node*)*TABLE_SIZE);
+	kv = (key_value*) nonsecret_malloc(sizeof(key_value));
+	kv->table = nonsecret_malloc(sizeof(struct node*)*TABLE_SIZE);
 	return kv;
 }
 
@@ -34,7 +34,7 @@ void key_value_insert(key_value *kv, char *key, void* value) {
 	}
 	int index = hash(key) % TABLE_SIZE;
 	s = kv->table[index];
-	struct node *n = malloc(sizeof(struct node));
+	struct node *n = nonsecret_malloc(sizeof(struct node));
 	kv->table[index] = n;
 	n->next = s;
 	n->value = value;
@@ -76,4 +76,29 @@ void key_value_destroy(key_value *kv) {
 	}
 	free(kv->table);
 	free(kv);
+}
+
+void key_value_change_case_reverse_key(key_value *kv, char* key) {
+	SECRET char *value = (SECRET char*) key_value_search_key(kv, key);
+	if (value == NULL)
+		return;
+	SECRET char *ptr = value;
+	while(*ptr!='\0') {
+		if( *ptr >= 'a' && *ptr <= 'z') {
+			*ptr += 'A' - 'a';
+		}else if(*ptr >= 'A' && *ptr <='Z') {
+			*ptr += 'a' - 'A';
+		}
+		ptr++;
+	}
+	ptr--;
+	SECRET char c;
+	while(ptr>value){
+		c = *ptr;
+		*ptr = *value;
+		*value = c;
+		ptr--;
+		value++;
+	}
+	return;
 }
